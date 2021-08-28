@@ -93,6 +93,11 @@ func (r *Exec) RunInStream() error {
 	return err
 }
 
+// RunInTee print env to os.stdout and os.stderr
+func (r *Exec) RunInTee() (string, string, error) {
+	return r.run(true)
+}
+
 func (r *Exec) run(isStream bool) (sout string, serr string, err error) {
 	if r.isLog {
 		_, _ = fmt.Fprintf(os.Stdout, r.formatCommand())
