@@ -3,6 +3,7 @@ package goexec
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -92,6 +93,12 @@ func (r *Exec) RunInStream() error {
 	return err
 }
 
+// RunInStream print env to os.stdout and os.stderr
+func (r *Exec) RunInStream() error {
+	_, _, err := r.run(true)
+	return err
+}
+
 func (r *Exec) run(isStream bool) (sout string, serr string, err error) {
 	if r.isLog {
 		_, _ = fmt.Fprintf(os.Stdout, r.formatCommand())
@@ -102,8 +109,8 @@ func (r *Exec) run(isStream bool) (sout string, serr string, err error) {
 
 	cmd := exec.Command(r.Name, r.Args...)
 	if isStream {
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		cmd.Stdout = newDoubleWriter(os.Stdout, stdout)
+		cmd.Stderr = newDoubleWriter(os.Stderr, stderr)
 	} else {
 		cmd.Stdout = stdout
 		cmd.Stderr = stderr
@@ -112,23 +119,11 @@ func (r *Exec) run(isStream bool) (sout string, serr string, err error) {
 	cmd.Env = r.getEnvs()
 	err = cmd.Run()
 
-	a := stdout.String()
-	b := stderr.String()
-
-	if !isStream && r.isLog {
-		if a != "" {
-			_, _ = fmt.Fprintf(os.Stdout, a)
-		}
-		if b != "" {
-			_, _ = fmt.Fprintf(os.Stderr, b)
-		}
-	}
-
 	if err != nil && r.isAssert {
 		os.Exit(1)
 	}
 
-	return a, b, err
+	return stdout.String(), stderr.String(), err
 }
 
 func (r *Exec) formatCommand() string {
@@ -156,4 +151,18 @@ func getEnvs() map[string]string {
 	}
 
 	return envs
+}
+
+type doubleWriter struct {
+	main   io.Writer
+	second io.Writer
+}
+
+func newDoubleWriter(main, second io.Writer) io.Writer {
+	return &doubleWriter{main: main, second: second}
+}
+
+func (r *doubleWriter) Write(p []byte) (n int, err error) {
+	_, _ = r.second.Write(p)
+	return r.main.Write(p)
 }
