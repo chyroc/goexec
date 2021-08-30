@@ -15,8 +15,8 @@ type Exec struct {
 	dir        string          // run dir
 	ignoreEnvs map[string]bool // ignore env to pass to command
 	setEnvs    map[string]string
-	isAssert   bool
-	isLog      bool
+	isAssert  bool
+	ignoreLog bool
 }
 
 // New create new Exec instance
@@ -56,9 +56,9 @@ func (r *Exec) WithAssert() *Exec {
 	return r
 }
 
-// WithLog log command
-func (r *Exec) WithLog() *Exec {
-	r.isLog = true
+// IgnoreLog log command
+func (r *Exec) IgnoreLog() *Exec {
+	r.ignoreLog = true
 	return r
 }
 
@@ -99,7 +99,7 @@ func (r *Exec) RunInTee() (string, string, error) {
 }
 
 func (r *Exec) run(isStream bool) (sout string, serr string, err error) {
-	if r.isLog {
+	if !r.ignoreLog {
 		_, _ = fmt.Fprintf(os.Stdout, r.formatCommand())
 	}
 
@@ -131,7 +131,7 @@ func (r *Exec) formatCommand() string {
 	for _, v := range r.Args {
 		s.WriteString(" " + v)
 	}
-	s.WriteString(fmt.Sprintf(", dir=%q", r.dir))
+	s.WriteString(fmt.Sprintf(", dir=%q\n", r.dir))
 
 	return s.String()
 }
