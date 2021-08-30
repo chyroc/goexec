@@ -127,6 +127,7 @@ func (r *Exec) run(isStream bool) (sout string, serr string, err error) {
 
 func (r *Exec) formatCommand() string {
 	s := strings.Builder{}
+	s.WriteString("[goexec] ")
 	s.WriteString(r.Name)
 	for _, v := range r.Args {
 		s.WriteString(" " + v)
