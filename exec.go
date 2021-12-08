@@ -36,8 +36,8 @@ func New(args ...string) *Exec {
 	return cmd
 }
 
-// SetDir set command run dir
-func (r *Exec) SetDir(s string) *Exec {
+// Dir set command run dir
+func (r *Exec) Dir(s string) *Exec {
 	r.dir = s
 	return r
 }
@@ -62,8 +62,8 @@ func (r *Exec) IgnoreLog() *Exec {
 	return r
 }
 
-// SetEnv set env
-func (r *Exec) SetEnv(k, v string) *Exec {
+// Env set env
+func (r *Exec) Env(k, v string) *Exec {
 	r.setEnvs[k] = v
 	return r
 }
@@ -100,7 +100,7 @@ func (r *Exec) RunInTee() (string, string, error) {
 
 func (r *Exec) run(isStream bool) (sout string, serr string, err error) {
 	if !r.ignoreLog {
-		_, _ = fmt.Fprintf(os.Stdout, r.formatCommand())
+		_, _ = fmt.Fprintf(os.Stderr, r.formatCommand())
 	}
 
 	stdout := new(bytes.Buffer)

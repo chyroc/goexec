@@ -11,7 +11,7 @@ func TestName(t *testing.T) {
 	as := assert.New(t)
 
 	{
-		stdout, _, err := goexec.New("env").SetEnv("MAGIC_UUID", "x").Run()
+		stdout, _, err := goexec.New("env").Env("MAGIC_UUID", "x").Run()
 		as.Nil(err)
 		as.Contains(stdout, "MAGIC_UUID=x")
 	}
